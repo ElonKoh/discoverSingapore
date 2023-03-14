@@ -1,0 +1,680 @@
+---
+title: "DBA3702 Team Project - Discover Singapore"
+author:
+- Ang Hao Wen (A0200454W)
+- Ang Yee Lyn Pricilla (A0202551W)
+- Koh Elon (A0220182W)
+- Png Zheng Jie, Sebastian (A0201782L)
+- Seow Si Min (A0204155R)
+date: "Last Updated: 14 Nov 2021"
+output:
+  html_document:
+    toc: true
+    toc_depth: 4
+    theme: united
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = F, message = F, eval = F)
+```
+
+## **1. Introduction**
+### **1.1 Background Information**
+Singapore is a massive travel hub for many tourists in South East Asia with the tourism industry seeing an average of over 19 million international visitors a year pre-covid (Singapore Tourism Board, 2020).  Existing apps like Tickle or Explore Singapore MRT are not catered to tourists and are lacking in many features that can provide the cohesive functionalities that cover transport, attractions, accommodation, and medical facilities should it be necessary. The major pain point for our target audience would be the hassle and complications of information being widely spread across multiple platforms, websites and resources, all while having to navigate through Singapore. 
+ 
+We acknowledge that many tourists these days embrace spontaneity and prefer to go sightseeing and visit various attractions in their immediate area with minimal planning or in need of hotel information nearby. Hence, our approach to this problem would be to consolidate helpful relevant resources and cover all bases for every need that a tourist might have when exploring the app.
+
+### **1.2 Problem Statement**
+After comparing to established travel websites like TripAdvisors and Klook, most of them focus on providing information about the attractions such as the price, what to do there and reviews from other users. However, as a tourist who is already situated in Singapore and not just planning his itinerary, it is important for them to have the basic information tools to help them familiarise themselves with getting around Singapore and know where to get help immediately in case of medical emergencies. This may include information on the different locations of various transportation modes as well as healthcare facilities. The addition of healthcare facilities such as clinics and hospitals takes into account the current pandemic, ensuring that everyone in Singapore is able to stay safe and healthy. It is documented that over 23% of foreign visitors to the US die from some form of injury while travelling (Morrison, 2006), and with a centralized app for medical facilities navigation, it would be a huge game-changer for potential life-critical situations.
+
+Furthermore, the established travel websites lack the main value offering -- providing tourists with an authentic Singapore experience. With an increasing number of tourists wanting to embrace and immerse in the local culture, we included hawker centres to make the app more localised, attracting users and giving it a unique feature compared to other travel apps. 
+
+### **1.3 Our Solution --  Discover Singapore**
+Our application aims to provide a one-stop platform for travellers to use when travelling in Singapore. Our application will provide them information on the places to visit (tourist attractions and historic sites), places in case of emergencies (hospitals and clinics) and how to get around while in Singapore (bus, MRT, LRT, taxi). We also provide tourists information about Singapore’s hawker centres, allowing them to try out our hawker culture and get an authentic Singapore experience. Additionally, a highlight of our application is the use of text and sentiment analysis, whereby travellers can get insights into how visitors felt about the attraction sites.
+
+## **2. Data Preparation & Methodology**
+For our application to work, we extracted data from various file types such as KML using readOGR and shapefiles as well as crawled data using RSelenium from different websites such as user reviews from Tripadvisor and information from Health Hub. We mainly crawled data to get user reviews for text analysis later and information about the hospitals and MRT stations in Singapore.
+
+The codes to extract the data are found in Section 7. Extracting codes.
+
+### **2.1 Data Sources**
+
+#### **2.1.1 Tourist Attractions**
+Data for tourist attractions was extracted from data.gov.sg which includes Tourist Attractions in Singapore and was last updated in 2017 managed by the Singapore Tourism Board. We then used the readOGR function to crawl the KML file.
+
+Data source: <https://data.gov.sg/dataset/tourist-attractions>
+
+#### **2.1.2 Historic Sites**
+Data for historical sites was extracted from data.gov.sg which shows the information from various historical sites in Singapore and was managed by the National Heritage Board last updated in January 2019. readOGR function was used to crawl the KML file.
+
+Data source: <https://data.gov.sg/dataset/historic-sites>
+
+#### **2.1.3 Hawker Centres**
+Data for hawker centres was extracted from data.gov.sg which shows the information from hawker centres, managed by National Environment Agency last updated in September 2021. KML file was extracted using readOGR function.
+
+Data source: <https://data.gov.sg/dataset/hawker-centres>
+
+
+#### **2.1.4 Clinics**
+Data for clinics was extracted from data.gov.sg which includes clinics with Community Health Assist Scheme (CHAS) and managed by the Ministry of Health. The last update was in September 2020. readOGR function was then used to crawl the KML file.
+
+Data source: <https://data.gov.sg/dataset/chas-clinics>
+
+
+#### **2.1.5 Hospitals**
+
+Data for the hospitals was crawled from the healthhub.sg website where it is managed by the Ministry of Health for users to easily find public information. The RSelenium package was used to crawl the data as the website has a dynamic webpage and the regular rvest package is not capable of scraping through more than one page of the list in this case. 
+Data source: <https://www.healthhub.sg/directory/hospitals>
+
+
+#### **2.1.6 Hotels**
+
+Data for hotels was extracted from data.gov.sg which includes hotels managed by Hotels Licensing Board. It was last updated in July 2021. readOGR function was used to read the KML file.
+
+Data source: <https://data.gov.sg/dataset/hotels>
+
+
+#### **2.1.6 Bus Stops**
+Data for bus stops was extracted from data.gov.sg which shows information of the location and ID of bus stops managed by Land Transport Authority (LTA) and was last updated in 2017. This KML file was crawled using readOGR function.
+
+Data source: <https://data.gov.sg/dataset/bus-stop-chinese-names-tourist-attractions>
+
+
+#### **2.1.6 MRT/LRT Stations**
+Data for MRT and LRT stations was extracted from data.gov.sg where it is managed by Land Transport Authority(LTA) and was last updated in 2017. These are crawled using readOGR function. MRT and LRT stations location data table was crawled from the last updated 2021 Wikipedia page.
+
+Data source: <https://data.gov.sg/dataset/train-station-chinese-names>
+Data source: <https://en.wikipedia.org/wiki/List_of_Singapore_MRT_stations>
+
+#### **2.1.6 Taxi Stands**
+Data for taxi stands was extracted from data.gov.sg which shows information of the location and type of taxi stands managed by the Land Transport Authority (LTA), and was last updated in 2020. KML file was extracted using readOGR function.
+
+Data source: <https://data.gov.sg/dataset/lta-taxi-stop>
+
+
+
+#### **2.1.7 Attraction Reviews**
+Data used under the “Attraction Reviews” tab are scrapped from TripAdvisor, which is a website where users leave reviews on hotels, tourist attraction sites and more. The rvest package was used to scrap the reviews on the attraction sites listed in the Tourist Attractions KML file stated under 2.1.1.
+
+Data source: <https://www.tripadvisor.com>
+
+Note: The URL indicated here is simply a generic form. The specific URLs for each attraction are listed in the TripAdvisorURL.csv and not listed here due to the large number of attractions and their corresponding URLs used. 
+
+The TripAdvisorURL.csv is a file manually prepared by the team to consolidate the URLs for each attraction. The csv is subsequently fed to the web scraping program. 
+ 
+## **3. Discover Singapore App**
+### **3.1 Overview** 
+The app consists of three tabs where users can interact to give them insights about travelling and discovering Singapore. 
+
+### **3.2 First tab -- Map View** 
+Our map view allows tourists to easily select one of the options under Transportation, Medical or Tourism to view all available locations within the categories. They can then select their starting point and destination from the drop-down list. 
+
+Upon doing so, directions with the estimated time and distance to reach the destination would be generated. Tourists can click on the coloured directions line to view the information. Furthermore, tourists can click on the pop up pins to access more information about the location. For example, if the tourist clicked on a travel attraction, the attraction’s name, description, operating hours and website link would be displayed. This allows tourists to easily access information and directions to places that they need to. Our app also includes getting directions to and from transport stations like bus stops, MRT and LRT to their intended destination. Additionally, they would always have access to medical facilities when an emergency arises, making tourists feel at ease when travelling with our app on their phones.
+
+![An example of using our map view to travel from Adam Park to Alexandra Hospital](./Pictures/Screenshot (1805).png)  
+
+### **3.3 Second tab -- Explore Tripadvisor**
+This tab allows tourists to have a glimpse into what others are saying about the travel attraction. It contains three sub-tabs namely Sentiments, Wordcloud and Full Reviews.
+
+#### **3.3.1 Sentiments**
+Tourists can choose the attraction they have in mind from the drop-down list to view the sentiments of other tourists who have visited the attractions before. There are eight sentiments, namely “anger”, “anticipation”, “disgust”, “fear”, “joy”, “negative”, “positive”, “sadness”, “surprise” and “trust”. From the bar graph, tourists can get a general sense of the sentiments of the attraction and see which sentiments scored higher. They can then decide whether they would embark on heading to the destination if the sentiments match their expectations.
+
+![An example of the Sentiment Analysis for Gardens by the Bay](./Pictures/Screenshot (1808).png) 
+
+#### **3.3.2 Wordcloud**
+We understand that user reviews is one of tourists’ most credible and sought after sources of information. However, a pain point that tourists face would be having to scroll through many reviews, reading information that may be irrelevant to them. Thus, we hope to simplify the process and introduce a word cloud, which would also allow us to differentiate from other competitors. This word cloud would generate the trending keywords relevant to the tourist attractions and the main gist of the hundreds or even thousands of reviews via wordspotting. Our word cloud would enable tourists to quickly grasp what the attraction can offer them and quickly decide if they want to visit the attraction.
+
+![An example of the Word Cloud for Gardens by the Bay](./Pictures/Screenshot (1809).png) 
+
+#### **3.3.3 Full Reviews**
+We also understand that text analysis has some limitations (further elaborated in the next section) and users would like to learn the full travel stories of others. Thus, our app also provides tourists the accessibility to full user reviews. Furthermore, users can toggle the buttons to sort the reviews according to review date, so as to be able to view the latest and most updated reviews available. Additionally, to make it convenient for users to view the reviews, we included a function to enable them to see up to 100 entries per page, reducing their need to keep clicking on the next page.
+
+![An example of the Full Reviews for Gardens by the Bay](./Pictures/Screenshot (1810).png) 
+
+### **4. Limitations**
+
+Although the app has many features to aid our target audience in using the app, there are also certain limitations.
+
+#### **4.1 Niche Datasets**
+Some of the datasets sourced contained data of very specific categories. For attractions as a category in Singapore, there are many different types of attractions, however in general, the datasets found only included the most popular tourist attractions. Data such as those from historical attractions had to be sourced separately. These would leave out different types of attractions that would appeal to some users. Additionally, data on privately owned hawker centres were also limited as most hawker centres in Singapore are managed by the National Environment Agency (NEA) (NEA, 2021). Hence, the team decided to focus on hawker centres managed by NEA. This thus limits users to only be able to know of hawker centres that are managed by NEA and HDB instead of others. 
+
+#### **4.2 Location Address**
+Some of the datasets only provide the coordinates of the locations, but do not provide the name and address of the location. This was a limitation on all transportation dataset we had. One such case is the Taxi Stand dataset obtained from LTA’s website. The implication of this lack of information meant that all the taxi stands in our app would be named as “Taxi Stands'' in the drop-down list, which is too ambiguous to know which taxi stand each option is referring to. To address this problem, we used the revgeocode function (ggmap) to find out the address based on the longitude and latitude and used that to name the taxi stands using the street names derived from the reverse geocode. Although this helped to increase the identifiability of each taxi stand option, we do acknowledge that the address obtained from the function may not be the precise address of the taxi stand due to some degree of error that comes with the function. 
+
+#### **4.3 Limitations of text analysis**
+Text analysis has its limitations as it is based on the users’ inputs. The qualitative data provided is subjective and can have very vast opinions affecting the analysis of the texts, unlike quantitative data. This compromises the quality of the reviews provided since they are qualitative. As the team’s text analysis is based on reviews on attractions, the content of the reviews may not be useful in the analysis, potentially lowering the quality of the analysis done. One such example of a review of the National Design Centre that did not add value was “I visited this with my friend father who was retired. It is in Khadakwasla which is 20kms from Pune and the training is done here”. This review did not give insights to other users on how good the attraction was or if there were any areas of improvement. It is difficult to remove such reviews from the sheer volume of the reviews scraped. However, our team has tried to counter this in the word cloud by setting a threshold where a minimum number of times the word is mentioned before it could be included. This ensures that irrelevant words are minimised. 
+
+The reviews may contain some errors since it was scraped from the web. For instance,  there were random “< >” discovered within the reviews during sample checks. Due to the sheer volume of the reviews scraped and the nature of the text being users’ input, it is difficult to detect all the possible errors and come up with a standard data cleaning problem to remove them. 
+
+The number of reviews a certain attraction had was a constraint. On one hand, there were some attractions which had too few reviews. On the other hand, there are those which had too many reviews. To make the insights more meaningful, we removed the attractions that had less than 10 reviews, as too few reviews will not generate enough words to form an appropriate-looking wordcloud. The sentiment analysis may also not be accurate with too small of a sample size of reviews. For attractions with more than 1000 reviews, we limited the number of reviews scraped to only the most recent 1000 reviews. The rationale behind the cap is due to the long duration for R to scrape all the reviews, especially when we need to include a few seconds of system sleep delay such that we will not flood the website with traffic. The cap was also deemed to be a reasonable number, as any reviews beyond the 1000th were likely to be dated and less relevant.
+
+To make sense of the text analysis of the reviews, sentiment analysis was also done using the Syuzhet package. The package has a function which separates text into individual words and conducts sentiment analysis by checking the emotions associated with those words. However, it is unclear to the team how the analysis was done by the function to determine if the review had sentiments of “joy”, “trust”, “fear” and more. With word spotting, it may run the risk of associating the wrong sentiment to the word under different contexts. This may affect the accuracy of the sentiment analysis.
+
+Another limitation for the text analysis was the word cloud. Due to the set-up of the word cloud, we do not have control over what is shown on the word cloud as it depends on the content of the user reviews. This may result in some of the results not being very helpful. An observation made was that many reviewers would include the attraction’s name into the review, therefore this would add to the word count and affect the word cloud. 
+
+### **5. Future Enhancements**
+The following are some of the further enhancements we could incorporate into the application to provide features that will add value to our users.
+
+#### **5.1 Improving on the navigation system**
+Due to the limited free credits for Google API, our team decided to utilise leaflets using OSM rather than Google Maps. However, in the future when it is financially feasible, we would employ Google Maps that are more informative, especially for information regarding directions. Google Maps would be able to provide more accurate walking time and distance for tourists to travel from one destination to the next. Furthermore, the street view could be used together with Google Maps to allow tourists to view the place of interest virtually. With the street view, tourists can check out the place first and then determine whether they would like to visit the destination. 
+
+Additionally, we could explore integrating GPS services in the application so as to allow tourists to have real-time navigation about their whereabouts and how to travel to their destination. This ensures that our app upholds the promise of a one-stop platform. A website that we thought would be useful would be <https://github.com/AugustT/shiny_geolocation> to enable the GPS functions. However, the codes for reference are in Javascript.
+
+Aligning with providing real-time navigation and adding on to our current app offering the locations of the bus stops and MRT or LRT lines, we could further enhance by including real-time transportation arrival data. For arrival data, we could utilise this website <https://datamall.lta.gov.sg/content/datamall/en/dynamic-data.html#Public%20Transport> to request for the API to enable this function. Our app could then provide tourists with an estimated arrival time to their destination. This enhancement would provide greater convenience to tourists, enabling them to better plan their time while travelling.
+
+#### **5.2 COVID Cluster Analysis**
+There was no open data to get real-time updated COVID cases and more information about each case, such as the place or region of infection. The closest dataset we could find was from <https://co.vid19.sg/singapore/dashboard> to get the name of the clusters and number of infections. However, some of the information in this website appears to be outdated, with the sum of the infections of all regions not corresponding with the numbers reported by MOH. In addition, some of the cluster information was too vague, such as “McDonald’s”, which hindered us from using reverse geocode to get the data we need. 
+
+In the future, when data is available, we would add on a feature on the COVID cluster analysis, allowing tourists to visualise the tourist attractions and COVID clusters (via a choropleth map) together. The map would be similar to the one found in <https://covidsitrep.moh.gov.sg/> under the “Geospatial Data” tab. This would allow tourists to check whether the tourist attraction in mind is high in COVID infections and thus be able to make an informed decision on whether they would like to proceed to go to the attraction or not. This is crucial given that the consequences of contracting COVID are very high in a foreign country.
+
+#### **5.3 Recommending destinations based on personalities**
+Another feature we thought would add value to users is having a system to recommend to users some destinations in which they are most likely to be interested in. This feature would start off with a short personality quiz to predict what traits they are looking for in attractions that they are interested in and what they like or dislike. Attractions would  be tagged with relevant traits such as “adventurous”, “relaxing” and more. Upon the quiz, relevant attractions suited for the users would be shown. This would be useful for users that want   convenience in finding attractions they are interested in on the go.
+
+### **6. Conclusion**
+Overall, our application seeks to be a one-stop platform for tourists to use while on the go in Singapore, aimed to provide tourists with an authentic Singapore travel experience. Our app will provide greater convenience, versatility and all-roundedness for tourists, allowing them to travel easily and safely.
+
+### **7. Codes to extract data**
+#### **Libraries**
+```{r}
+library(dplyr)     # %>%, mutate, anti_join, select 
+library(httr)      # GET
+library(ggmap)     # geocode, revgeocode
+library(leaflet)
+library(proj4)     # project
+library(rgdal)     # readOGR
+library(RSelenium) # rsDriver
+library(rvest)     # read_html, html_text, html_nodes, html_attr
+library(syuzhet)   # get_nrc_sentiment
+library(tidyr)     # separate
+library(tidytext)  # unnest_token
+
+#register_google(key = 'Insert api key here')
+```
+
+#### **[Bus Stops](https://datamall.lta.gov.sg/content/datamall/en/dynamic-data.html)**
+```{r}
+# Read the data from kml file
+bus_stops <- readOGR(dsn ="./datasets/bus stops/BusStop.shp", verbose = F)
+
+# Copy data frame
+bus_stops_clean <- bus_stops@data
+
+# Add coordinates to the data frame
+bus_stops_clean[, c("LONGITUDE", "LATITUDE")] <- project(bus_stops@coords, bus_stops@proj4string@projargs, inverse = T)
+
+# Write data frame into a csv file
+write.csv(bus_stops_clean, "./datasets/bus stops/BusStop.csv")
+```
+
+#### **[CHAS Clinics](https://data.gov.sg/dataset/chas-clinics)**
+```{r}
+# Read the data from kml file
+clinics <- readOGR(dsn ="./datasets/chas clinics/chas-clinics-kml.kml",
+                          layer = "MOH_CHAS_CLINICS", verbose = F)
+
+# Column names for data frame
+columns <- c("HCI_CODE", "HCI_NAME", "LICENCE_TYPE", "HCI_TEL", "POSTAL_CD",
+             "ADDR_TYPE", "BLK_HSE_NO", "FLOOR_NO", "UNIT_NO", "STREET_NAME",
+             "BUILDING_NAME", "CLINIC_PROGRAMME_CODE", "X_COORDINATE",
+             "Y_COORDINATE", "INC_CRC", "FMEL_UPD_D")
+
+# Collapse the column names into a string of regular expressions
+re <- paste0("(.+", paste0(columns, "\\s)", collapse = "|(\\s"))
+
+# Create data frame with separated columns of data
+clinics_clean <- clinics@data %>%
+    rowwise() %>%
+    mutate(Description = trimws(html_text(read_html(charToRaw(Description))))) %>%
+    separate(Description, c("To Drop", columns), re) %>%
+    select(c(3:length(.))) %>%
+    as.data.frame()
+
+# Remove # from floor number
+clinics_clean$FLOOR_NO <- sub("#", "", clinics_clean$FLOOR_NO)
+
+# Add coordinates to the data frame 
+# clinics@coords[, 1:2] is not used as there are several inaccuracies in coordinates
+clinics_clean[, c("LONGITUDE", "LATITUDE")] <- with(clinics_clean,  
+  geocode(location = paste(BLK_HSE_NO, STREET_NAME, ", Singapore,", POSTAL_CD), 
+          output = "latlon", source = "google"))
+
+# Add address of clinics
+clinics_clean$ADDRESS <- with(clinics_clean, 
+                              paste0(BLK_HSE_NO, " ", STREET_NAME,
+                                     ifelse(FLOOR_NO != "", paste0(", #", FLOOR_NO), ""), 
+                                     ifelse(UNIT_NO != "", paste0("-", UNIT_NO), ""), ", ", 
+                                     "Singapore ", POSTAL_CD)) %>% 
+                          gsub("(?:\\b)(\\w+)", "\\L\\1", ., perl = T) %>% 
+                          gsub("(?:\\b)(\\w)", "\\U\\1", ., perl = T)
+
+# Write data frame into a csv file
+write.csv(clinics_clean, "./datasets/chas clinics/chas-clinics.csv")
+```
+
+#### **[Hawker Centres](https://data.gov.sg/dataset/hawker-centres)**
+```{r}
+# Read the data from kml file
+hawker_centres <- readOGR(dsn ="./datasets/hawker centres/hawker-centres-kml.kml",
+                          layer = "HAWKERCENTRE", verbose = F)
+
+# Column names for data frame
+columns <- c("ADDRESSBLOCKHOUSENUMBER", "LATITUDE", "EST_ORIGINAL_COMPLETION_DATE",
+             "STATUS", "CLEANINGSTARTDATE", "ADDRESSUNITNUMBER", "ADDRESSFLOORNUMBER",
+             "NO_OF_FOOD_STALLS", "HYPERLINK", "REGION", "APPROXIMATE_GFA", "LONGITUDE",
+             "INFO_ON_CO_LOCATORS", "NO_OF_MARKET_STALLS", "AWARDED_DATE",
+             "LANDYADDRESSPOINT", "CLEANINGENDDATE", "PHOTOURL", "DESCRIPTION", "NAME",
+             "ADDRESSTYPE", "RNR_STATUS", "ADDRESSBUILDINGNAME", "HUP_COMPLETION_DATE",	
+             "LANDXADDRESSPOINT", "ADDRESSSTREETNAME", "ADDRESSPOSTALCODE", 
+             "DESCRIPTION_MYENV", "IMPLEMENTATION_DATE", "ADDRESS_MYENV", "INC_CRC",
+             "FMEL_UPD_D")
+
+# Collapse the column names into a string of regular expressions
+re <- paste0("(.+", paste0(columns, "\\s)", collapse = "|(\\s"))
+
+# Create data frame with separated columns of data
+hawker_centres_clean <- hawker_centres@data %>%
+    rowwise() %>%
+    mutate(Description = trimws(html_text(read_html(charToRaw(Description))))) %>%
+    separate(Description, c("To Drop", columns), re) %>%
+    select(c(3:6, 13:15, 17:18, 20:23, 25:29, 31:34)) %>%
+    as.data.frame()
+
+# Clean names of hawker centres
+hawker_centres_clean$NAME <- gsub(".+\\(|\\)", "", hawker_centres_clean$NAME)
+
+# Add coordinates to the data frame
+hawker_centres_clean[, c("LONGITUDE", "LATITUDE")] <- hawker_centres@coords[, 1:2]
+
+# Remove hawker centres under construction
+hawker_centres_clean <- hawker_centres_clean[hawker_centres_clean$STATUS != "Under Construction",]
+
+# Reset row index
+row.names(hawker_centres_clean) <- NULL
+
+# Write data frame into a csv file
+write.csv(hawker_centres_clean, "./datasets/hawker centres/hawker-centres.csv")
+```
+
+#### **[Historic Sites](https://data.gov.sg/dataset/historic-sites)**
+```{r}
+# Read the data from kml file
+historic_sites <- readOGR(dsn = "./datasets/historic sites/historic-sites-kml.kml",
+                          layer = "HISTORICSITES", verbose = F)
+
+# Column names for data frame
+columns <- c("LANDYADDRESSPOINT", "LANDXADDRESSPOINT", "ADDRESSBLOCKHOUSENUMBER",
+             "PHOTOURL", "NAME", "HYPERLINK", "DESCRIPTION", "ADDRESSUNITNUMBER",
+             "ADDRESSTYPE", "ADDRESSSTREETNAME", "ADDRESSBUILDINGNAME", 
+             "ADDRESSPOSTALCODE", "ADDRESSFLOORNUMBER", "INC_CRC", "FMEL_UPD_D")
+
+# Collapse the column names into a string of regular expressions
+re <- paste0("(.+", paste0(columns, "\\s)", collapse = "|(\\s"))
+
+# Create data frame with separated columns of data
+historic_sites_clean <- historic_sites@data %>%
+    rowwise() %>%
+    mutate(Description = trimws(html_text(read_html(charToRaw(Description))))) %>%
+    separate(Description, c("To Drop", columns), re) %>%
+    select(c(3:length(.), -"ADDRESSUNITNUMBER", -"ADDRESSTYPE", -"ADDRESSFLOORNUMBER")) %>%
+    as.data.frame()
+
+# Clean URL Paths to a valid weblink
+historic_sites_clean$HYPERLINK <- 
+  sub("https://roots.sg/Roots/Content/Places/historic-sites/",  
+      "https://www.roots.gov.sg/places/places-landing/Places/historic-sites/", 
+      historic_sites_clean$HYPERLINK)
+
+historic_sites_clean$HYPERLINK[1] <- sub("adam-park-battle", "battle-at-adam-park",
+                                         historic_sites_clean$HYPERLINK[1])
+
+# Add coordinates to the data frame
+historic_sites_clean[, c("LONGITUDE", "LATITUDE")] <- historic_sites@coords[, 1:2]
+
+# Write data frame into a csv file
+write.csv(historic_sites_clean, "./datasets/historic sites/historic-sites.csv")
+```
+
+#### **[Hospitals](https://www.healthhub.sg/directory/hospitals)**
+```{r}
+website <- "https://www.healthhub.sg/directory/hospitals"
+
+# Create and launch remote driver
+rD <- rsDriver(browser="firefox",port=2342L)
+remoteDriver <- driver[["client"]]
+
+#go to https://www.healthhub.sg/directory/hospitals using the popup browser before running this code
+scrap1 <- read_html(remDr$getPageSource()[[1]]) 
+
+#click on the second page of the hospital directory before running this code
+scrap2 <- read_html(remDr$getPageSource()[[1]]) 
+
+# Close the driver and server
+remDr$close()
+rD$server$stop()
+
+# Extracting hospital name & address + data cleaning
+hospital1 <- scrap1 %>% html_nodes(".app_ment") 
+hospital2 <- scrap2 %>% html_nodes(".app_ment")
+
+hospital1 <- gsub('<span class=\"app_ment\">\n                            ', "", hospital1)
+hospital1 <- gsub('</span>\n                        </span>', "", hospital1)
+hospital1 <- gsub("<br><span class=\"add_sign\">", "~", hospital1)
+hospital1 <- unlist(hospital1)
+hospital1 <- as.data.frame(hospital1)
+
+hospital2 <- gsub('<span class=\"app_ment\">\n                            ', "", hospital2)
+hospital2 <- gsub('</span>\n                        </span>',"", hospital2)
+hospital2 <- gsub("<br><span class=\"add_sign\">", "~", hospital2)
+hospital2 <- unlist(hospital2)
+hospital2 <- as.data.frame(hospital2)
+
+# Merging data from two different pages into one
+names(hospital1) <- "hospital"
+names(hospital2) <- "hospital"
+hospital <- rbind(hospital1, hospital2)
+hospital <- tidyr::separate(hospital, col="hospital",into = c("Name","Address"),sep = "~")
+hospital$Address <- gsub('&amp;22', "", hospital$Address)
+hospital$Address <- gsub(' - ', "", hospital$Address)
+
+# Extracting telephone & latlong data
+page1 <-(html_attr(html_nodes(scrap1, "a"), "href"))
+page2 <-(html_attr(html_nodes(scrap2, "a"), "href"))
+
+tel <- c(unlist(page1[grepl("tel:",page1)]),unlist(page2[grepl("tel:", page2)]))
+latlong <- c(unlist(page1[grepl("https://www.google.com.sg/maps", page1)]), 
+             unlist(page2[grepl("https://www.google.com.sg/maps", page2)]))
+
+# Combining tel and latlon into hospital df
+hospital <- hospital %>% mutate(Tel = tel) %>% mutate(latlon = latlong) 
+
+hospital$Tel <- gsub('tel:', "", hospital$Tel)
+hospital$latlon <- substr(hospital$latlon, 34, nchar(hospital$latlon))
+hospital <- tidyr::separate(hospital,col = "latlon", into = c("lat", "lon"), sep = ",")
+
+write.csv(hospital,"./datasets/hospital_data.csv", row.names = FALSE)
+```
+
+#### **[Hotels](https://data.gov.sg/dataset/hotels)**
+```{r}
+# Read the data from kml file
+hotels <- readOGR(dsn ="./datasets/hotels/hotel-locations.kml",
+                          layer = "HOTELS", verbose = F)
+
+# Column names for data frame
+columns <- c("HYPERLINK", "DESCRIPTION", "POSTALCODE", "KEEPERNAME", "TOTALROOMS",
+             "ADDRESS", "INC_CRC", "FMEL_UPD_D", "NAME")
+
+# Collapse the column names into a string of regular expressions
+re <- paste0("(.+", paste0(columns, "\\s)", collapse = "|(\\s"))
+
+# Create data frame with separated columns of data
+hotels_clean <- hotels@data %>%
+    rowwise() %>%
+    mutate(Description = trimws(html_text(read_html(charToRaw(Description))))) %>%
+    separate(Description, c("To Drop", columns), re) %>%
+    select(c(3, 5:length(.))) %>%
+    as.data.frame()
+
+# Add coordinates to the data frame
+hotels_clean[, c("LONGITUDE", "LATITUDE")] <- hotels@coords[, 1:2]
+
+# Rename columns
+hotels_clean <- rename(hotels_clean, EMAIL = HYPERLINK)
+
+# Reorder data frame columns
+hotels_clean <- hotels_clean[, c(8:10, 5, 2, 1, 3, 4, 6, 7)]
+
+# Write data frame into a csv file
+write.csv(hotels_clean, "./datasets/hotels/hotels.csv")
+```
+
+#### **[Taxi Stands](https://datamall.lta.gov.sg/content/datamall/en/static-data.html)**
+```{r}
+# Read the data from kml file
+taxi_stands <- readOGR(dsn ="./datasets/taxi stands/TaxiStop.shp", verbose = F)
+
+# Copy data frame
+taxi_stands_clean <- taxi_stands@data
+
+# Add coordinates to the data frame
+taxi_stands_clean[, c("Longitude", "Latitude")] <- project(taxi_stands@coords, 
+                                                           taxi_stands@proj4string@projargs, 
+                                                           inverse = T)
+
+# Remove NA columns and rows
+taxi_stands_clean <- taxi_stands_clean %>% select(-1) %>% na.omit()
+
+# Rename column
+taxi_stands_clean <- rename(taxi_stands_clean, Type = TYPE_CD_DE)
+
+# Replace taxi stand type with camel case format
+taxi_stands_clean$Type <- taxi_stands_clean$Type %>% 
+  tolower() %>% gsub("(?:\\b)(\\w)", "\\U\\1", ., perl = T)
+
+# Retrieve full address from coordinates
+taxi_stands_clean <- taxi_stands_clean %>% rowwise() %>% 
+  mutate(Address = revgeocode(c(Longitude, Latitude)))
+
+# Extract address without postal code as name
+taxi_stands_clean$Name <- sub(",.+", "", taxi_stands_clean$Address)
+
+# Remove duplicated taxi stands
+taxi_stands_clean <- taxi_stands_clean[!duplicated(taxi_stands_clean$Name), ]
+
+# Reorder data frame columns
+taxi_stands_clean <- taxi_stands_clean[, c(1, 6, 2:5)]
+
+# Write data frame into a csv file
+write.csv(taxi_stands_clean, "./datasets/taxi stands/TaxiStop.csv")
+```
+
+#### **[Tourist Attractions in Singapore](https://data.gov.sg/dataset/tourist-attractions)**
+```{r}
+# Read the data from kml file
+attractions <- readOGR(dsn = "./datasets/tourist attractions/TOURISM.kml", 
+                       layer = "TOURISM", verbose = F)
+
+# Column names for data frame
+columns <- c("URL Path", "PHOTOURL", "Image Text", "Image By", "NAME", "Last Modified",
+             "Latitude", "Longtitude", "ADDRESSSTREETNAME", "ADDRESSPOSTALCODE",
+             "DESCRIPTION", "HYPERLINK", "Description", "Opening Hours", "INC_CRC",
+             "FMEL_UPD_D", "X_ADDR", "Y_ADDR")
+
+# Turn the column names into a string of regular expressions
+re <- paste0("(.+", paste0(columns, "\\s+)", collapse = "|(\\s+"))
+
+# Create data frame with separated columns of data
+attractions_clean <- attractions@data %>%
+  rowwise() %>%
+  mutate(Description = trimws(html_text(read_html(charToRaw(Description))))) %>%
+  separate(Description, c("To Drop", columns), re) %>%
+  select(c(3:length(.), -"ADDRESSPOSTALCODE")) %>%
+  as.data.frame()
+
+# Clean URL Paths to a valid weblink
+attractions_clean$`URL Path` <- attractions_clean$`URL Path` %>% 
+  gsub(pattern = "((?<=\\.com)/en)|(\\.html)", replacement = "", perl = T) %>%
+  sub(pattern = "yoursingapore", replacement = "visitsingapore") %>%
+  paste0("https://", .)
+
+# Replace <Null> strings with an empty string
+attractions_clean[attractions_clean == "<Null>"] <- ""
+
+# Remove duplicated attractions
+attractions_clean <- attractions_clean[!duplicated(attractions_clean$NAME), ]
+
+# Reset row index
+row.names(attractions_clean) <- NULL
+
+# Clean names of attractions
+attractions_clean$NAME <- gsub("(?<=[a-z])(:|,|\\s*\\-|\\s+in)\\s+.+", "", 
+                               attractions_clean$NAME, perl = T)
+
+# Rename columns
+attractions_clean <- rename(attractions_clean, Longitude = Longtitude, 
+                            Description1 = DESCRIPTION, Description2 = Description,
+                            Street = ADDRESSSTREETNAME, `Image Link` = PHOTOURL,
+                            Website = HYPERLINK)
+
+# Reorder data frame columns
+attractions_clean <- attractions_clean[, c(5, 7, 8, 13, 9, 10, 12, 1, 11, 2:4, 6, 14:17)]
+
+# Write data frame into a csv file
+write.csv(attractions_clean, "./datasets/tourist attractions/TOURISM.csv")
+```
+
+#### **[Train Stations](https://datamall.lta.gov.sg/content/datamall/en/static-data.html)**
+```{r}
+# Read the data from shp file
+stations <- readOGR(dsn = "./datasets/train stations/MRTLRTStnPtt.shp", verbose = F)
+
+# Dropping object id column
+stations_clean <- stations@data[,-1]
+
+# Add coordinates to the data frame
+stations_clean[, c("LONGITUDE", "LATITUDE")] <- project(stations@coords, stations@proj4string@projargs, inverse = T)
+
+# Replace station names with camel case format
+stations_clean$STN_NAME <- stations_clean$STN_NAME %>% 
+  gsub("(?:\\b)(?!MRT)(?!LRT)(\\w+)", "\\L\\1", ., perl = T) %>% 
+  gsub("(?:\\b)(\\w)", "\\U\\1", ., perl = T)
+
+# Write data frame into a csv file
+write.csv(stations_clean, "./datasets/train stations/MRTLRTstations.csv")
+```
+
+#### **Combined Data Frame with Latitude and Longitude**
+```{r}
+# Load data
+attractions <- read.csv("./datasets/tourist attractions/TOURISM.csv", stringsAsFactors = F)
+busstops <- read.csv("./datasets/bus stops/BusStop.csv", stringsAsFactors = F)
+clinics <- read.csv("./datasets/chas clinics/chas-clinics.csv", stringsAsFactors = F)
+hawker_centres <- read.csv("./datasets/hawker centres/hawker-centres.csv", stringsAsFactors = F)
+historic_sites <- read.csv("./datasets/historic sites/historic-sites.csv", stringsAsFactors = F)
+hospitals <- read.csv("./datasets/hospitals/hospital_data.csv", stringsAsFactors = F)
+hotels <- read.csv("./datasets/hotels/hotels.csv", stringsAsFactors = F)
+stations <- read.csv("./datasets/train stations/MRTLRTstations.csv", stringsAsFactors = F)
+taxi_stands <- read.csv("./datasets/taxi stands/TaxiStop.csv", stringsAsFactors = F)
+
+# Initial value for Group number (which indicates which data frame it is)
+start = 0
+
+# Combines all data frames into one, add row id and group and export as csv file
+list(busstops[, c("LOC_DESC", "LONGITUDE", "LATITUDE", "X")],
+     stations[, c("STN_NAME", "LONGITUDE", "LATITUDE", "X")],
+     taxi_stands[, c("Name", "Longitude", "Latitude", "X")],
+     clinics[, c("HCI_NAME", "LONGITUDE", "LATITUDE", "X")],
+     hospitals[, c("Name", "lon", "lat", "X")],
+     hawker_centres[, c("NAME", "LONGITUDE", "LATITUDE", "X")],
+     historic_sites[, c("NAME", "LONGITUDE", "LATITUDE", "X")],
+     hotels[, c("NAME", "LONGITUDE", "LATITUDE", "X")],
+     attractions[, c("NAME", "Longitude", "Latitude", "X")]) %>%
+  lapply(., \(x) {start <<- start + 1; x$num <- start; return(x)}) %>%
+  lapply(., \(x) setNames(x, c("Name", "Longitude", "Latitude", "Row_ID", "Group"))) %>%
+  bind_rows() %>%
+  write.csv(., "./datasets/combined_data.csv")
+```
+
+#### **Web Scraping TripAdvisor Reviews**
+```{r}
+tripadvisor <- read.csv("./datasets/tripadvisor/TripAdvisorURL.csv") %>% 
+  select(c("Name", "Url", "Rounded_Reviews")) %>% drop_na() 
+reviews <- NULL
+review_dates <- NULL
+attraction_name <- NULL
+
+for (i in 1:nrow(tripadvisor)) {   
+  url<- tripadvisor[i,2]
+  x <- GET(url, add_headers('user-agent' = 'Student project data scraper - school project use only'))
+  
+  scrap <- x %>% read_html()
+  scrap_reviews <- scrap %>% html_nodes(".dDKKM .NejBf") %>% html_text()
+  scrap_date <- scrap %>% html_nodes(".bNOAd .cspKb") %>% html_text()
+  
+  reviews <- append(reviews,scrap_reviews)
+  review_dates <- append(review_dates, scrap_date)
+  temp_name <- tripadvisor[i,1]
+  attraction_name <- append(attraction_name, rep(temp_name,length(scrap_reviews)))
+  
+  Sys.sleep(2)
+  
+  url<- gsub("Reviews-","Reviews-or",url)
+  for (i in seq(10, tripadvisor[i,3], by=10)) {
+    url<- gsub("-or", paste0("-or",i),url)
+    x <- GET(url, add_headers('user-agent' = 'Student project data scraper - school project use only'))
+    
+    scrap <- x %>% read_html()
+    scrap_reviews <- scrap %>% html_nodes(".dDKKM .NejBf") %>% html_text()
+    scrap_date <- scrap %>% html_nodes(".bNOAd .cspKb") %>% html_text()
+    
+    reviews <- append(reviews,scrap_reviews)
+    review_dates <- append(review_dates,scrap_date)
+    
+    Sys.sleep(2)
+    
+    url<- gsub(paste0("-or",i),"-or", url)
+    attraction_name <- append(attraction_name, rep(temp_name, length(scrap_reviews)))
+  }
+}
+
+name <- as.data.frame(attraction_name)
+reviews <- as.data.frame(reviews)
+review_dates <- as.data.frame(review_dates)
+all_reviews <-cbind(name,reviews,review_dates)
+all_reviews$review_dates <- gsub("Written ", "", all_reviews$review_dates)
+
+write.csv(all_reviews,"./datasets/tripadvisor/Reviews.csv")
+```
+
+#### **Converting Tripadvisor reviews to words for Wordcloud and Sentiment Analysis**
+```{r}
+review <- read.csv("./datasets/tripadvisor/Reviews.csv")
+
+freq_word_df <- NULL
+sentiment_df <- NULL
+
+for (i in unique(review$attraction_name)) {
+  review_analysis  <- review %>% filter(attraction_name == i)
+  
+  # Convert to Words
+  review_analysis$reviews <- gsub("[[:punct:]]", "", review_analysis$reviews)
+  review_words <- review_analysis %>% select(reviews) %>% unnest_tokens(word, reviews)
+  review_words <- review_words %>% anti_join(stop_words)
+  review_words <- review_words %>% mutate(attraction_name = i)
+  
+  freq_word_df <- append(freq_word_df,list(review_words))
+  
+  # Sentiment Analysis
+   ew_sentiment<-get_nrc_sentiment((review_words$word))
+   sentimentscores<-data.frame(colSums(ew_sentiment[,]))
+   sentimentscores <- sentimentscores %>% mutate(attraction_name = i)
+   
+   sentiment_df <-append(sentiment_df,list(sentimentscores))
+
+}
+
+freq_word_df <- plyr::ldply(freq_word_df , rbind)
+
+sentiment_df <- plyr::ldply(sentiment_df , rbind)
+sentiment_df <- sentiment_df %>% 
+  mutate(sentiment = rep(c("anger", "anticipation", "disgust", "fear", "joy", "sadness",
+                           "surprise", "trust", "negative", "positive"), nrow(sentiment_df)/10))
+names(sentiment_df)[1] <- "score"
+sentiment_df <- sentiment_df %>% select(2,3,1)
+
+write.csv(freq_word_df,"./datasets/tripadvisor/ReviewWords.csv")
+write.csv(sentiment_df ,"./datasets/tripadvisor/Sentiments.csv")
+```
+
+### <b>8. References</b>
+Academy, U. C. (n.d.). Covid-19 Singapore dashboard. COVID-19 Singapore Dashboard. <br>
+August, T. (n.d.). AugustT/shiny_geolocation: A demonstration of how geolocation from a smartphone or PC can be used in a shiny app. GitHub.  <br>
+Land Transport Agency. (n.d.). Dynamic datasets. LTA.  <br>
+Ministry of Health Singapore. (n.d.). 19 situation report. COVID-19 Situation Report. <br>
+National Environment Agency. (2021). Managing Hawker Centres and Markets in Singapore.  <br>
+Singapore Tourism Board. (n.d.). Tourism sector performance - STB.GOV.SG. Tourism Sector Performance Q4 2019 Report. <br>
+Journal of Travel Medicine. (2006). Unintentional injury during foreign travel - academic.oup. <br>
+
+
+[Back to top](#){style="float:right; margin:10px 0px 35px"}<br>
